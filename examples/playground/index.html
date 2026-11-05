@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Explore 32 detailed muscle regions with male and female SVG artwork adapted from react-muscle-highlighter." />
+    <title>Muscle Graph · Anatomy explorer</title>
+    <style>
+      :root { color-scheme: light; font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #23343b; background: #f5f6f4; }
+      * { box-sizing: border-box; }
+      body { margin: 0; }
+      main { width: min(1100px, calc(100% - 40px)); margin: auto; padding: 32px 0 56px; }
+      header { display: flex; justify-content: space-between; align-items: end; gap: 24px; margin-bottom: 28px; }
+      .wordmark { font-size: 13px; font-weight: 700; letter-spacing: .05em; margin: 0 0 18px; color: #417063; }
+      h1 { font-size: clamp(30px, 4vw, 44px); font-weight: 550; letter-spacing: -.055em; line-height: 1.1; margin: 0; }
+      header p { margin: 10px 0 0; color: #617077; font-size: 14px; }
+      .badge { border: 1px solid #ced9d2; border-radius: 999px; color: #3b6356; padding: 7px 12px; font-size: 12px; white-space: nowrap; }
+      .toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 14px; padding: 14px 18px; background: white; border: 1px solid #dfe5df; border-radius: 14px 14px 0 0; }
+      .segmented { display: inline-flex; gap: 3px; background: #eff2ee; padding: 3px; border-radius: 9px; }
+      button, select, input { font: inherit; }
+      button { cursor: pointer; border: 0; background: transparent; color: inherit; border-radius: 7px; padding: 9px 15px; font-size: 13px; }
+      button[aria-pressed='true'] { background: white; box-shadow: 0 1px 4px #20382b19; color: #1c5944; }
+      button:hover { background: #eaf0ea; }
+      :focus-visible { outline: 3px solid #337561; outline-offset: 3px; }
+      .divider { width: 1px; height: 26px; background: #e3e8e1; }
+      .color-label, .check-label { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: #53646a; }
+      input[type='color'] { width: 26px; height: 26px; padding: 2px; border: 1px solid #d4dcd6; background: white; border-radius: 6px; cursor: pointer; }
+      input[type='checkbox'] { accent-color: #417063; }
+      .toolbar .reset { margin-left: auto; border: 1px solid #d9e1d9; }
+      .canvas { background: #fff; border: 1px solid #dfe5df; border-top: 0; border-radius: 0 0 14px 14px; overflow: hidden; }
+      .canvas-heading { display: flex; justify-content: space-between; align-items: center; padding: 20px 26px 8px; }
+      .canvas-heading h2 { font-size: 14px; font-weight: 550; margin: 0; }
+      .canvas-heading span { font-size: 12px; color: #79858a; }
+      .models { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+      .card { margin: 0; display: flex; flex-direction: column; align-items: center; padding: 0 12px 12px; }
+      .card + .card { border-left: 1px solid #f0f2ef; }
+      .card figcaption { color: #75838a; text-transform: uppercase; letter-spacing: .15em; font-size: 10px; margin: 14px 0 5px; }
+      .host { width: 100%; display: flex; justify-content: center; }
+      .host .mg-wrapper { width: min(100%, 340px); padding: 0; }
+      .inspector { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; border-top: 1px solid #e8ece7; padding: 16px 24px; background: #fbfcfa; }
+      #status { font-size: 13px; margin: 0; min-height: 20px; }
+      select { background: white; color: #43565c; border: 1px solid #d6ded5; border-radius: 7px; padding: 8px 10px; max-width: 100%; font-size: 12px; }
+      .hint { font-size: 12px; color: #6c7c82; margin: 18px 3px 0; }
+      .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+      @media (max-width: 640px) {
+        main { width: calc(100% - 20px); padding-top: 22px; }
+        header { align-items: start; }
+        .badge { display: none; }
+        .toolbar { gap: 10px; padding: 10px; }
+        .divider { display: none; }
+        .models { gap: 0; }
+        .card { padding: 0 0 10px; }
+        .canvas-heading { padding: 16px 14px 4px; }
+        .canvas-heading span { display: none; }
+        .inspector { padding: 14px; }
+        .check-label { font-size: 11px; }
+        .toolbar .reset { padding: 8px; }
+      }
+      @media (max-width: 520px) {
+        .models { grid-template-columns: 1fr; }
+        .card + .card { border-left: 0; border-top: 1px solid #edf0eb; }
+        .host .mg-wrapper { width: min(100%, 300px); }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div><p class="wordmark">muscle-graph / anatomy explorer</p><h1>Anatomy, in detail.</h1><p>Explore the muscles. Make the map your own.</p></div>
+        <span class="badge">32 selectable muscle regions</span>
+      </header>
+      <div class="toolbar" aria-label="Anatomy controls">
+        <div class="segmented" aria-label="Body model">
+          <button id="male" type="button" aria-pressed="true">Male</button>
+          <button id="female" type="button" aria-pressed="false">Female</button>
+        </div>
+        <span class="divider" aria-hidden="true"></span>
+        <label class="color-label">Muscle <input id="body-color" type="color" value="#879297" /></label>
+        <label class="color-label">Body fill <input id="body-fill-color" type="color" value="#ffffff" /></label>
+        <label class="color-label">Body outline <input id="body-outline-color" type="color" value="#dfdfdf" /></label>
+        <label class="color-label">Muscle borders <input id="outline-color" type="color" value="#ffffff" /></label>
+        <label class="color-label">Background <input id="background-color" type="color" value="#ffffff" /></label>
+        <label class="color-label">Highlight <input id="highlight-color" type="color" value="#d65d4a" /></label>
+        <label class="check-label"><input id="segmentation" type="checkbox" /> Color every group</label>
+        <button id="reset" class="reset" type="button">Reset</button>
+      </div>
+      <section class="canvas" aria-label="Interactive anatomy models">
+        <div class="canvas-heading"><h2 id="model-label">Male anatomy</h2><span>Hover to inspect · click to highlight</span></div>
+        <div class="models">
+          <figure class="card"><figcaption>Anterior</figcaption><div class="host" id="front"></div></figure>
+          <figure class="card"><figcaption>Posterior</figcaption><div class="host" id="back"></div></figure>
+        </div>
+        <div class="inspector">
+          <p id="status" role="status" aria-live="polite">Choose a muscle to explore its anatomy.</p>
+          <label><span class="sr-only">Inspect muscle group</span><select id="muscle-select"><option value="">Find a muscle group…</option></select></label>
+        </div>
+      </section>
+      <p class="hint">32 detailed muscle regions, plus selectable hands, feet and supplementary body parts. SVG artwork adapted from <a href="https://github.com/soroojshehryar/react-muscle-highlighter">react-muscle-highlighter</a> under the MIT license.</p>
+    </main>
+    <script type="module" src="/main.ts"></script>
+  </body>
+</html>
