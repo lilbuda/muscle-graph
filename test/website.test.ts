@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import ts from 'typescript';
+import { transformWithOxc } from 'vite';
 import { getPage, pages } from '../website/src/content/index.js';
 import { codeBlock } from '../website/src/html.js';
 import { renderNavigation, renderPage } from '../website/src/render.js';
@@ -8,7 +8,7 @@ import { getAnatomy } from '../src/advanced-geometry.js';
 
 describe('documentation', () => {
   for (const page of pages) {
-    it(`resolves the links and code examples on ${page.path}`, () => {
+    it(`resolves the links and code examples on ${page.path}`, async () => {
       expect(getPage(page.path)).toBe(page);
       const content = document.createElement('div');
       content.innerHTML = renderNavigation(page.path) + renderPage(page);
@@ -24,12 +24,8 @@ describe('documentation', () => {
         const label = block.querySelector('figcaption > span')?.textContent;
         if (label !== 'TypeScript' && label !== 'TSX') continue;
         const source = block.querySelector('code')?.textContent ?? '';
-        const result = ts.transpileModule(source, {
-          fileName: label === 'TSX' ? 'example.tsx' : 'example.ts',
-          compilerOptions: { target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },
-          reportDiagnostics: true,
-        });
-        expect(result.diagnostics?.filter(diagnostic => diagnostic.category === ts.DiagnosticCategory.Error), source).toEqual([]);
+        const filename = label === 'TSX' ? 'example.tsx' : 'example.ts';
+        await expect(transformWithOxc(source, filename), source).resolves.toHaveProperty('code');
       }
     });
   }
