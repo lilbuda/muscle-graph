@@ -1,0 +1,41 @@
+name: Bug report
+description: Report a reproducible problem with the library or documentation.
+title: "fix: "
+body:
+  - type: markdown
+    attributes:
+      value: For sensitive security issues, follow SECURITY.md and request a private reporting channel.
+  - type: input
+    id: version
+    attributes:
+      label: Package version
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Browser, operating system, and framework or build tool versions.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Provide a small code example or a link to a reproduction and the steps to reproduce it.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Include screenshots for visual or anatomy problems.
+    validations:
+      required: true

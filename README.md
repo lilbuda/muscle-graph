@@ -1,5 +1,7 @@
 # muscle-graph
 
+Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md), [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md), and [SECURITY.md](SECURITY.md) before opening an issue or pull request.
+
 An accessible, framework-agnostic SVG muscle map with male and female front/back artwork adapted from [react-muscle-highlighter](https://github.com/soroojshehryar/react-muscle-highlighter). `muscle-graph` has no runtime dependencies and works with Angular, React, Vue, Svelte, or plain JavaScript.
 
 The licensed SVG path data and original view boxes are preserved. Female figures use a uniform display fit and a 20% head/hair reduction to align their apparent height and head proportions with the male figures. Existing separate paths are assigned to detailed muscle groups. Combined chest, biceps, male anterior deltoid, posterior deltoid and posterior trapezius contours are subdivided using complementary clipping masks to retain 32 detailed selectable muscle IDs. These added subdivisions are illustration regions for exercise selection.
