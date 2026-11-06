@@ -107,8 +107,6 @@ export function createModelSvg(bodyType: BodyType, type: ModelType, ariaLabel: s
     group.setAttribute('class', 'mg-muscle');
     group.dataset.muscle = entry.muscle;
     group.dataset.muscleGroups = getMuscleParents(entry.muscle).join(' ');
-    group.setAttribute('role', 'button');
-    group.setAttribute('tabindex', '0');
     group.setAttribute('aria-label', label);
     if (footClips && type === 'posterior' && entry.muscle === MuscleType.ANKLES) {
       group.setAttribute('clip-path', footClips.body);

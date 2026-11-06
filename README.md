@@ -112,6 +112,7 @@ export class MuscleMapComponent {
 | `data` | `readonly ExerciseData[]` | `[]` | Exercises used to calculate highlights |
 | `bodyType` | `'male' \| 'female'` | `'male'` | Athletic male or female proportions |
 | `type` | `'anterior' \| 'posterior'` | `'anterior'` | Front or back view |
+| `interactive` | `boolean` | `true` | Enable muscle activation, tab stops, button semantics, and hover effects |
 | `bodyColor` | `string` | `#879297` | Unhighlighted muscle color |
 | `bodyFillColor` | `string` | `transparent` | Body silhouette fill beneath the muscle regions |
 | `highlightedColors` | `readonly string[]` | blue palette | Colors indexed by `Math.ceil(frequency) - 1`; the final color is reused |
@@ -123,12 +124,30 @@ export class MuscleMapComponent {
 | `wrapperClassName` | `string` | `mg-wrapper` | Additional wrapper class |
 | `style` | `Record<string, string \| number>` | `{}` | Wrapper inline styles |
 | `svgStyle` | `Record<string, string \| number>` | `{}` | SVG inline styles |
-| `ariaLabel` | `string` | `Interactive muscle map` | Accessible SVG label |
+| `ariaLabel` | `string` | `Interactive muscle map` or `Muscle map` | Accessible SVG label, based on interactivity |
 | `onClick` | `(stats: MuscleStats) => void` | — | Click, touch, Enter, or Space callback |
 | `onMouseEnter` | `(stats: MuscleStats) => void` | — | Muscle pointer-enter callback |
 | `onMouseLeave` | `(stats: MuscleStats) => void` | — | Muscle pointer-leave callback |
 
 An exercise's optional `frequency` defaults to `1`. Repeating a muscle within one exercise does not count it twice. Unknown muscle names are ignored.
+
+## Static maps
+
+Set `interactive: false` to display a static map. Mouse, touch, keyboard activation, and pointer callbacks are disabled. Muscles have image semantics and accessible names containing their set counts. They keep their SVG titles, workout highlights, and custom colors, and have no tab stops or hover effects.
+
+```ts
+const graph = createMuscleGraph({
+  container: host,
+  interactive: false,
+  ariaLabel: 'Muscles trained this week',
+  data: [{ name: 'Bench press', muscles: ['chest'], frequency: 3 }],
+});
+
+graph.update({ type: 'posterior' });
+graph.update({ interactive: true });
+```
+
+Interactivity can change through `update()` without replacing the SVG. Disabling it clears focus from a focused muscle. Front/back switching controls belong to your application, so manage their native `disabled` state independently of muscle interactivity.
 
 ## Color customization
 
@@ -215,7 +234,7 @@ The library is released under the [MIT license](LICENSE). SVG artwork and body o
 
 Importing the package is safe during server rendering. Create the graph after the host element mounts. A supplied container determines the DOM document, including iframe containers. Call `destroy()` when the host is removed.
 
-Data, color, style and callback updates reuse the existing SVG. Changing `bodyType` or `type` rebuilds its geometry. Styles use pixel units for dimensions and unitless values for opacity, line height and CSS custom properties.
+Data, color, style, interactivity and callback updates reuse the existing SVG. Changing `bodyType` or `type` rebuilds its geometry. Styles use pixel units for dimensions and unitless values for opacity, line height and CSS custom properties.
 
 Color overrides merge across updates. Set an individual override to `null` to restore its palette or default color.
 

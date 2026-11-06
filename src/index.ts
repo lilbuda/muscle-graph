@@ -21,6 +21,7 @@ interface ResolvedOptions {
   readonly data: readonly ExerciseData[];
   readonly type: ModelType;
   readonly bodyType: BodyType;
+  readonly interactive: boolean;
   readonly bodyColor: string;
   readonly bodyFillColor: string;
   readonly highlightedColors: readonly string[];
@@ -32,7 +33,7 @@ interface ResolvedOptions {
   readonly wrapperClassName: string;
   readonly style: StyleMap;
   readonly svgStyle: StyleMap;
-  readonly ariaLabel: string;
+  readonly ariaLabel?: string;
   readonly onClick?: (stats: MuscleStats) => void;
   readonly onMouseEnter?: (stats: MuscleStats) => void;
   readonly onMouseLeave?: (stats: MuscleStats) => void;
@@ -42,6 +43,7 @@ const defaults: ResolvedOptions = {
   data: Object.freeze([]) as readonly ExerciseData[],
   type: 'anterior' as ModelType,
   bodyType: 'male' as BodyType,
+  interactive: true,
   bodyColor: '#879297',
   bodyFillColor: 'transparent',
   highlightedColors: DEFAULT_COLORS,
@@ -53,7 +55,6 @@ const defaults: ResolvedOptions = {
   wrapperClassName: 'mg-wrapper',
   style: Object.freeze({}),
   svgStyle: Object.freeze({}),
-  ariaLabel: 'Interactive muscle map',
 } as const;
 
 export function createMuscleGraph(initialOptions: MuscleGraphOptions = {}): MuscleGraphInstance {
@@ -70,7 +71,7 @@ export function createMuscleGraph(initialOptions: MuscleGraphOptions = {}): Musc
   element.append(stylesheet);
 
   const getTargetMuscle = (target: EventTarget | null): MuscleType | undefined => {
-    if (!target || !('nodeType' in target) || target.nodeType !== 1) return undefined;
+    if (!options.interactive || !target || !('nodeType' in target) || target.nodeType !== 1) return undefined;
     const group = (target as Element).closest<SVGGElement>('[data-muscle]');
     if (group?.closest('.mg-wrapper') !== element) return undefined;
     const value = group.dataset.muscle;
@@ -106,17 +107,20 @@ export function createMuscleGraph(initialOptions: MuscleGraphOptions = {}): Musc
   element.addEventListener('keydown', onKeyDown);
 
   const render = (): void => {
-    const focusedMuscle = document.activeElement?.closest('.mg-wrapper') === element
-      ? document.activeElement.closest<SVGGElement>('[data-muscle]')?.dataset.muscle
+    const focusedRegion = document.activeElement?.closest('.mg-wrapper') === element
+      ? document.activeElement.closest<SVGGElement>('[data-muscle]')
       : undefined;
+    const focusedMuscle = focusedRegion?.dataset.muscle;
+    if (!options.interactive) focusedRegion?.blur();
+    const ariaLabel = options.ariaLabel ?? (options.interactive ? 'Interactive muscle map' : 'Muscle map');
     let svg = element.querySelector<SVGSVGElement>('.mg-svg');
     if (!svg || svg.dataset.bodyType !== options.bodyType || svg.dataset.type !== options.type) {
-      const nextSvg = createModelSvg(options.bodyType, options.type, options.ariaLabel, document);
+      const nextSvg = createModelSvg(options.bodyType, options.type, ariaLabel, document);
       if (svg) svg.replaceWith(nextSvg);
       else element.append(nextSvg);
       svg = nextSvg;
     }
-    svg.setAttribute('aria-label', options.ariaLabel);
+    svg.setAttribute('aria-label', ariaLabel);
     element.className = options.wrapperClassName;
     element.classList.add('mg-wrapper');
     resetStyle(element.style);
@@ -142,10 +146,18 @@ export function createMuscleGraph(initialOptions: MuscleGraphOptions = {}): Musc
         ?? options.bodyColor;
       group.style.setProperty('--mg-fill', color);
       group.setAttribute('aria-label', `${getMuscleLabel(muscle)}: ${frequency} ${frequency === 1 ? 'set' : 'sets'}`);
-      group.setAttribute('aria-pressed', String(frequency > 0));
+      if (options.interactive) {
+        group.setAttribute('role', 'button');
+        group.setAttribute('tabindex', '0');
+        group.setAttribute('aria-pressed', String(frequency > 0));
+      } else {
+        group.setAttribute('role', 'img');
+        group.removeAttribute('tabindex');
+        group.removeAttribute('aria-pressed');
+      }
       group.dataset.frequency = String(frequency);
     }
-    if (focusedMuscle) svg.querySelector<SVGGElement>(`[data-muscle="${focusedMuscle}"]`)?.focus({ preventScroll: true });
+    if (options.interactive && focusedMuscle) svg.querySelector<SVGGElement>(`[data-muscle="${focusedMuscle}"]`)?.focus({ preventScroll: true });
   };
 
   render();
@@ -189,6 +201,7 @@ function mergeOptions(
     ...current,
     ...next,
     data: next.data ?? current.data,
+    interactive: next.interactive ?? current.interactive,
     highlightedColors: next.highlightedColors?.length ? next.highlightedColors : current.highlightedColors,
     muscleColors,
     style: next.style ?? current.style,

@@ -6,7 +6,7 @@ import { createRequire } from 'node:module';
 const fixtureDirectory = '.npm-cache/package-check';
 await mkdir(fixtureDirectory, { recursive: true });
 const fixture = `import createMuscleGraph, { MuscleType, type MuscleGraphOptions } from 'muscle-graph';
-const options: MuscleGraphOptions = { muscleColors: { [MuscleType.CHEST]: null } };
+const options: MuscleGraphOptions = { interactive: false, muscleColors: { [MuscleType.CHEST]: null } };
 const create: typeof createMuscleGraph = createMuscleGraph;
 void options;
 void create;
