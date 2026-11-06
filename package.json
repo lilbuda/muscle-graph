@@ -1,6 +1,6 @@
 {
   "name": "muscle-graph",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Accessible, framework-agnostic advanced SVG muscle maps for male and female bodies.",
   "type": "module",
   "main": "./dist/muscle-graph.umd.cjs",
