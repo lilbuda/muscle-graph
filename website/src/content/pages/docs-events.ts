@@ -21,7 +21,16 @@ const graph = createMuscleGraph({
     });
   },
 });`)}`),
-    section('callbacks-update', 'Update callbacks', `<p>Pass a new callback to <code>update()</code> when your application state changes. The graph uses the latest callback without replacing the SVG.</p>${codeBlock(`graph.update({ onClick: handleMuscleClick });`)}`),
+    section('static-maps', 'Display a static map', `<p>Set <code>interactive: false</code> to disable mouse, touch and keyboard activation, pointer callbacks, tab stops, and hover effects. Regions become labeled images and preserve their set counts, SVG titles, data-driven highlights, and custom colors.</p>${codeBlock(`const graph = createMuscleGraph({
+  container: host,
+  interactive: false,
+  ariaLabel: 'Muscles trained this week',
+  data: [{ name: 'Bench press', muscles: ['chest'], frequency: 3 }],
+});
+
+graph.update({ type: 'posterior' });
+graph.update({ interactive: true });`)}<p>Changing interactivity reuses the SVG. Disabling it clears focus from a focused muscle. View switching controls belong to your application. Manage their native <code>disabled</code> state separately so users can switch views of a static map.</p>`),
+    section('callbacks-update', 'Update callbacks', `<p>Pass a new callback to <code>update()</code> when your application state changes. The graph uses the latest callback without replacing the SVG. Callbacks remain available when interactivity is re-enabled.</p>${codeBlock(`graph.update({ onClick: handleMuscleClick });`)}`),
   ] };
 
 export default page;

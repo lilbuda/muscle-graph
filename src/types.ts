@@ -26,6 +26,8 @@ export interface MuscleGraphOptions {
   readonly data?: readonly ExerciseData[];
   readonly type?: ModelType;
   readonly bodyType?: BodyType;
+  /** Defaults to true. False renders labeled static regions without activation or hover effects. */
+  readonly interactive?: boolean;
   readonly bodyColor?: string;
   readonly bodyFillColor?: string;
   readonly highlightedColors?: readonly string[];

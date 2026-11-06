@@ -17,7 +17,8 @@ export const baseStyles = `
 
 .mg-wrapper *, .mg-wrapper *::before, .mg-wrapper *::after { box-sizing: inherit; }
 .mg-svg { display: block; width: 100%; height: auto; aspect-ratio: 1 / 2; }
-.mg-muscle { cursor: pointer; outline: none; }
+.mg-muscle { cursor: default; outline: none; }
+.mg-muscle[role="button"] { cursor: pointer; }
 .mg-outline {
   fill: var(--mg-body-fill-color);
   stroke: var(--mg-body-outline-color);
@@ -33,10 +34,10 @@ export const baseStyles = `
   stroke-linejoin: round;
   stroke-linecap: round;
 }
-.mg-muscle:hover .mg-muscle-part, .mg-muscle:focus-visible .mg-muscle-part {
+.mg-muscle[role="button"]:hover .mg-muscle-part, .mg-muscle[role="button"]:focus-visible .mg-muscle-part {
   fill: var(--mg-hover-color);
   stroke: var(--mg-hover-color);
   stroke-width: 1.6;
 }
-.mg-muscle:focus-visible { outline: 2px solid transparent; }
+.mg-muscle[role="button"]:focus-visible { outline: 2px solid transparent; }
 `;

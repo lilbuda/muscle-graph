@@ -8,6 +8,100 @@ import createMuscleGraph, {
 } from '../src';
 
 describe('muscle-graph', () => {
+  for (const bodyType of ['male', 'female'] as const) {
+    for (const type of ['anterior', 'posterior'] as const) {
+      it(`renders a non-interactive ${bodyType} ${type} map with accessible highlights`, () => {
+        const onClick = vi.fn();
+        const onMouseEnter = vi.fn();
+        const onMouseLeave = vi.fn();
+        const graph = createMuscleGraph({
+          bodyType, type, interactive: false, onClick, onMouseEnter, onMouseLeave,
+          data: [{ name: 'Grip', muscles: ['hands'], frequency: 2 }],
+          highlightedColors: ['red', 'green'], muscleColors: { feet: 'blue' },
+        });
+        try {
+          expect(graph.element.querySelector('svg')?.getAttribute('aria-label')).toBe('Muscle map');
+          expect(graph.element.querySelector('[tabindex], [role="button"], [aria-pressed]')).toBeNull();
+          for (const region of graph.element.querySelectorAll('[data-muscle]')) {
+            expect(region.getAttribute('role')).toBe('img');
+            expect(region.getAttribute('aria-label')).toMatch(/: \d+ sets?$/);
+            expect(region.querySelector('title')?.textContent).toBeTruthy();
+          }
+          const hands = getRegion(graph.element, MuscleType.HANDS);
+          expect(hands.style.getPropertyValue('--mg-fill')).toBe('green');
+          expect(getRegion(graph.element, MuscleType.FEET).style.getPropertyValue('--mg-fill')).toBe('blue');
+          hands.querySelector('path')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+          hands.dispatchEvent(new PointerEvent('click', { pointerType: 'touch', bubbles: true }));
+          hands.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+          hands.dispatchEvent(new MouseEvent('mouseout', { bubbles: true }));
+          for (const key of ['Enter', ' ']) {
+            const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+            hands.dispatchEvent(event);
+            expect(event.defaultPrevented).toBe(false);
+          }
+          expect(onClick).not.toHaveBeenCalled();
+          expect(onMouseEnter).not.toHaveBeenCalled();
+          expect(onMouseLeave).not.toHaveBeenCalled();
+          expect(graph.getStats('hands')?.data).toEqual({ exercises: ['Grip'], frequency: 2 });
+        } finally {
+          graph.destroy();
+        }
+      });
+    }
+  }
+
+  it('toggles interaction without replacing geometry and clears existing muscle focus', () => {
+    const onClick = vi.fn();
+    const graph = createMuscleGraph({ container: document.body, onClick, ariaLabel: 'Workout anatomy' });
+    try {
+      const svg = graph.element.querySelector('svg');
+      const hands = getRegion(graph.element, MuscleType.HANDS);
+      hands.focus();
+      expect(document.activeElement).toBe(hands);
+      graph.update({ interactive: false, data: [{ name: 'Grip', muscles: ['hands'], frequency: 3 }] });
+      expect(graph.element.querySelector('svg')).toBe(svg);
+      expect(document.activeElement).not.toBe(hands);
+      expect(hands.getAttribute('aria-label')).toBe('Hands: 3 sets');
+      expect(hands.hasAttribute('tabindex')).toBe(false);
+      graph.update({ bodyColor: 'pink' });
+      expect(hands.getAttribute('role')).toBe('img');
+      graph.update({ interactive: true });
+      expect(graph.element.querySelector('svg')).toBe(svg);
+      expect(hands.getAttribute('role')).toBe('button');
+      expect(hands.getAttribute('tabindex')).toBe('0');
+      expect(hands.getAttribute('aria-pressed')).toBe('true');
+      hands.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+      expect(onClick).toHaveBeenCalledOnce();
+      graph.update({ interactive: false, bodyType: 'female', type: 'posterior' });
+      expect(graph.element.querySelector('svg')?.getAttribute('aria-label')).toBe('Workout anatomy');
+      expect(graph.element.querySelector('[tabindex], [role="button"], [aria-pressed]')).toBeNull();
+      graph.update({ interactive: true });
+      getRegion(graph.element, MuscleType.HANDS).dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      expect(onClick).toHaveBeenCalledTimes(2);
+    } finally {
+      graph.destroy();
+    }
+  });
+
+  it('keeps nested graphs independently interactive', () => {
+    const outerClick = vi.fn();
+    const innerClick = vi.fn();
+    const outer = createMuscleGraph({ container: document.body, interactive: false, onClick: outerClick });
+    const inner = createMuscleGraph({ container: outer.element, onClick: innerClick });
+    try {
+      const hands = getRegion(inner.element, MuscleType.HANDS);
+      hands.focus();
+      outer.update({ interactive: false });
+      expect(document.activeElement).toBe(hands);
+      hands.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+      expect(innerClick).toHaveBeenCalledOnce();
+      expect(outerClick).not.toHaveBeenCalled();
+    } finally {
+      inner.destroy();
+      outer.destroy();
+    }
+  });
+
   it('reuses geometry for data and theme updates and replaces it for view changes', () => {
     const graph = createMuscleGraph({ svgStyle: { opacity: 0.4 } });
     const svg = graph.element.querySelector('svg');
