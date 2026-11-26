@@ -101,6 +101,7 @@ export function createModelSvg(bodyType: BodyType, type: ModelType, ariaLabel: s
     }
   }
 
+  const subdividedContours = new Set<string>();
   for (const entry of anatomy.regions) {
     const group = document.createElementNS(SVG_NS, 'g');
     const label = getMuscleLabel(entry.muscle);
@@ -131,6 +132,7 @@ export function createModelSvg(bodyType: BodyType, type: ModelType, ariaLabel: s
         path.setAttribute('clip-path', footClips[side]);
       }
       if (mask) {
+        subdividedContours.add(d);
         const clip = document.createElementNS(SVG_NS, 'clipPath');
         clip.id = `mg-${modelId}-${entry.muscle}-${index}`;
         clip.setAttribute('clipPathUnits', 'userSpaceOnUse');
@@ -141,6 +143,17 @@ export function createModelSvg(bodyType: BodyType, type: ModelType, ariaLabel: s
       parts.append(path);
     }
     figure.append(group);
+  }
+
+  // Clipping the subdivision paths cuts off their strokes at the original contour.
+  // Draw each shared perimeter once, above the fills, without adding a hit target.
+  if (subdividedContours.size > 0) {
+    const borders = document.createElementNS(SVG_NS, 'g');
+    borders.setAttribute('aria-hidden', 'true');
+    for (const contour of subdividedContours) {
+      borders.append(pathElement(contour, 'mg-muscle-perimeter'));
+    }
+    figure.append(borders);
   }
   return svg;
 }
