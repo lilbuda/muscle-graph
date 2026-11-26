@@ -432,6 +432,30 @@ describe('muscle-graph', () => {
     }
   });
 
+  it('renders a complete, unclipped perimeter around each subdivided muscle contour', () => {
+    for (const bodyType of ['male', 'female'] as const) {
+      for (const type of ['anterior', 'posterior'] as const) {
+        const graph = createMuscleGraph({ bodyType, type, outlineColor: 'red' });
+        try {
+          const contours = [...graph.element.querySelectorAll('.mg-source-contour')]
+            .map(path => path.getAttribute('d'));
+          const perimeters = [...graph.element.querySelectorAll('.mg-muscle-perimeter')];
+          expect(contours.length).toBeGreaterThan(0);
+          expect(perimeters.map(path => path.getAttribute('d'))).toEqual([...new Set(contours)]);
+          for (const path of perimeters) {
+            expect(path.closest('[clip-path], [data-muscle]')).toBeNull();
+            expect(path.closest('[aria-hidden="true"]')).not.toBeNull();
+          }
+          graph.update({ outlineColor: 'blue' });
+          expect(graph.element.style.getPropertyValue('--mg-outline-color')).toBe('blue');
+          expect([...graph.element.querySelectorAll('.mg-muscle-perimeter')]).toEqual(perimeters);
+        } finally {
+          graph.destroy();
+        }
+      }
+    }
+  });
+
   it('supports the source artwork supplementary hair and ankle groups', () => {
     const onClick = vi.fn<(stats: MuscleStats) => void>();
     const graph = createMuscleGraph({ onClick,

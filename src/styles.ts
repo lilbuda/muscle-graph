@@ -29,11 +29,14 @@ export const baseStyles = `
 }
 .mg-muscle-part {
   fill: var(--mg-fill, var(--mg-body-color));
+}
+.mg-muscle-part, .mg-muscle-perimeter {
   stroke: var(--mg-outline-color);
   stroke-width: 1.15;
   stroke-linejoin: round;
   stroke-linecap: round;
 }
+.mg-muscle-perimeter { fill: none; pointer-events: none; }
 .mg-muscle[role="button"]:hover .mg-muscle-part, .mg-muscle[role="button"]:focus-visible .mg-muscle-part {
   fill: var(--mg-hover-color);
   stroke: var(--mg-hover-color);
